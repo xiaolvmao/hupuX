@@ -107,9 +107,9 @@ struct ScoreView: View {
             .refreshable { await load(tag) }
             // 赛程横跨整个赛季，第一场往往是几个月前的，所以默认停在「今天」而不是列表顶部
             .onAppear { proxy.scrollTo(anchorDay(s), anchor: .top) }
-            .onChange(of: tag) { if let s = cache[tag] { proxy.scrollTo(anchorDay(s), anchor: .top) } }
+            .onChange(of: tag) { _ in if let s = cache[tag] { proxy.scrollTo(anchorDay(s), anchor: .top) } }
         }
-        .id(tag)   // 换分区时重建列表，避免沿用上一个分区的滚动位置
+        .id(tag.name)   // 换分区时重建列表，避免沿用上一个分区的滚动位置
     }
 
     /// 虎扑给的锚点那场比赛所在的日期；没给时退回第一个「今天」

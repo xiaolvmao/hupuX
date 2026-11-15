@@ -87,7 +87,7 @@ struct ImageViewer: View {
     // MARK: 手势
 
     private var zoomGesture: some Gesture {
-        MagnifyGesture()
+        MagnificationGesture()
             .onChanged { scale = min(max(baseScale * $0.magnification, 1), 8) }
             .onEnded { _ in
                 baseScale = scale

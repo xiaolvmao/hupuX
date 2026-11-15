@@ -42,7 +42,7 @@ struct HomeView: View {
             .task { if posts.isEmpty { await load() } }
             .task { await refreshHomeMatches() }
             // 比分会变，回到前台时刷新
-            .onChange(of: scenePhase) { if scenePhase == .active { Task { await refreshHomeMatches() } } }
+            .onChange(of: scenePhase) { _ in if scenePhase == .active { Task { await refreshHomeMatches() } } }
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
     }

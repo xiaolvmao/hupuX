@@ -53,6 +53,6 @@ struct RootView: View {
         // 切换 AMOLED 时：整树重建 + 刷新 TabBar 外观 + 系统组件跟随深浅色
         .id(theme.amoled)
         .preferredColorScheme(theme.amoled ? .dark : .light)
-        .onChange(of: theme.amoled) { Self.applyTabBarAppearance() }
+        .onChange(of: theme.amoled) { _ in Self.applyTabBarAppearance() }
     }
 }
