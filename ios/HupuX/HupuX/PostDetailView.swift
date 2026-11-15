@@ -54,24 +54,7 @@ struct PostDetailView: View {
                         headerCard(detail)
                         commentsHeader(detail)
                         ForEach(Array(displayedComments.enumerated()), id: \.offset) { idx, c in
-                            CommentCardView(
-                                comment: c,
-                                isLiked: likedPids.contains(c.pid),
-                                onLike: canInteract ? { Task { await toggleLike(c) } } : nil,
-                                onReply: canInteract && c.desktopPage > 0 ? { replyTarget = c; showReply = true } : nil,
-                                onSubReplies: c.replyCount > 0 ? { Task { await toggleSubReplies(c) } } : nil,
-                                subRepliesExpanded: expandedComments.contains(c.pid)
-                            )
-                            .padding(.horizontal, 14)
-                            .onAppear {
-                                if sortMode == 0 && idx >= displayedComments.count - 3 {
-                                    Task { await loadMoreComments() }
-                                }
-                            }
-                            // 楼中楼内联展开：子回复直接平铺在父评论下方，不再层层弹窗
-                            if expandedComments.contains(c.pid) {
-                                subRepliesSection(c)
-                            }
+                            commentRow(c, idx: idx)
                         }
                         if loadingMoreComments { ProgressView().padding() }
                     }
@@ -303,6 +286,28 @@ struct PostDetailView: View {
     }
 
     // MARK: - 楼中楼内联展开
+
+    /// 单条评论行（从 body 拆出，避免 SwiftUI 类型检查超时）：评论卡片 + 内联楼中楼
+    @ViewBuilder private func commentRow(_ c: Comment, idx: Int) -> some View {
+        CommentCardView(
+            comment: c,
+            isLiked: likedPids.contains(c.pid),
+            onLike: canInteract ? { Task { await toggleLike(c) } } : nil,
+            onReply: canInteract && c.desktopPage > 0 ? { replyTarget = c; showReply = true } : nil,
+            onSubReplies: c.replyCount > 0 ? { Task { await toggleSubReplies(c) } } : nil,
+            subRepliesExpanded: expandedComments.contains(c.pid)
+        )
+        .padding(.horizontal, 14)
+        .onAppear {
+            if sortMode == 0 && idx >= displayedComments.count - 3 {
+                Task { await loadMoreComments() }
+            }
+        }
+        // 楼中楼内联展开：子回复直接平铺在父评论下方，不再层层弹窗
+        if expandedComments.contains(c.pid) {
+            subRepliesSection(c)
+        }
+    }
 
     /// 展开/收起某条评论的楼中楼；首次展开时拉取子回复并缓存
     private func toggleSubReplies(_ c: Comment) async {
