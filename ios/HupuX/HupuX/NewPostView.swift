@@ -136,7 +136,7 @@ struct NewPostView: View {
         let sel = creationType == value
         return Text(label)
             .font(.system(size: 13, weight: sel ? .bold : .regular))
-            .foregroundStyle(sel ? .white : Theme.textSecondary)
+            .foregroundStyle(sel ? Theme.onBrand : Theme.textSecondary)
             .padding(.horizontal, 14).padding(.vertical, 6)
             .background(sel ? Theme.brand : Theme.appBg)
             .clipShape(Capsule())

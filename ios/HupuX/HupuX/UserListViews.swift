@@ -236,9 +236,9 @@ struct UserSpaceView: View {
         let sel = tab == index
         return Text(label)
             .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(sel ? Theme.textSecondary : .white)
+            .foregroundStyle(sel ? Theme.onBrand : Theme.textSecondary)
             .frame(maxWidth: .infinity).frame(height: 36)
-            .background(sel ? AnyShapeStyle(Color.white) : AnyShapeStyle(LinearGradient(colors: Theme.headerColors, startPoint: .top, endPoint: .bottom)))
+            .background(sel ? AnyShapeStyle(LinearGradient(colors: Theme.pillSelectedColors, startPoint: .top, endPoint: .bottom)) : AnyShapeStyle(LinearGradient(colors: Theme.pillUnselectedColors, startPoint: .top, endPoint: .bottom)))
             .clipShape(Capsule())
             .shadow(color: .black.opacity(0.2), radius: sel ? 4 : 1, y: 1)
             .contentShape(Capsule())

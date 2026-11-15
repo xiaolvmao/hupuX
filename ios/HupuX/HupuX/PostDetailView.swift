@@ -205,7 +205,7 @@ struct PostDetailView: View {
         let sel = sortMode == mode
         return Text(label)
             .font(.system(size: 12, weight: sel ? .bold : .regular))
-            .foregroundStyle(sel ? .white : Theme.textSecondary)
+            .foregroundStyle(sel ? Theme.onBrand : Theme.textSecondary)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(sel ? Theme.brand : Theme.appBg)
             .clipShape(Capsule())
@@ -425,7 +425,7 @@ struct CommentCardView: View {
                         Text(comment.username).font(.system(size: 13, weight: .semibold)).foregroundStyle(Theme.textPrimary)
                     }
                     if comment.isAuthor {
-                        Text("楼主").font(.system(size: 10)).foregroundStyle(.white)
+                        Text("楼主").font(.system(size: 10)).foregroundStyle(Theme.onBrand)
                             .padding(.horizontal, 4).padding(.vertical, 1)
                             .background(Theme.brand).clipShape(RoundedRectangle(cornerRadius: 3))
                     }

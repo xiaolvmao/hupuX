@@ -421,7 +421,7 @@ struct ScoreItemView: View {
                 if d.canScore {
                     Button { if requireLogin() { showRating = true } } label: {
                         Text(d.myScore > 0 ? "修改评分" : "打分")
-                            .font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
+                            .font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.onBrand)
                             .padding(.horizontal, 16).padding(.vertical, 7)
                             .background(Theme.brand).clipShape(Capsule())
                     }

@@ -72,7 +72,7 @@ struct ProfileView: View {
             Button { showLogin = true } label: {
                 Text("登录虎扑")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.onBrand)
                     .padding(.horizontal, 40).padding(.vertical, 12)
                     .background(Theme.brand)
                     .clipShape(Capsule())
@@ -110,28 +110,28 @@ struct ProfileView: View {
                 }
                 .frame(width: 64, height: 64)
                 .clipShape(Circle())
-                .overlay(Circle().stroke(.white.opacity(0.6), lineWidth: 2))
+                .overlay(Circle().stroke(Theme.textTertiary.opacity(0.5), lineWidth: 2))
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(p.nickname)
                             .font(.system(size: 20, weight: .heavy))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Theme.textPrimary)
                         if !p.levelDesc.isEmpty {
                             Text(p.levelDesc)
                                 .font(.system(size: 11))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Theme.textPrimary)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(.white.opacity(0.25))
+                                .background(Theme.textSecondary.opacity(0.15))
                                 .clipShape(Capsule())
                         }
                     }
                     HStack(spacing: 10) {
                         if !p.regTimeStr.isEmpty {
-                            Text(p.regTimeStr).font(.system(size: 12)).foregroundStyle(.white.opacity(0.8))
+                            Text(p.regTimeStr).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
                         }
                         if !p.location.isEmpty {
-                            Text(p.location).font(.system(size: 12)).foregroundStyle(.white.opacity(0.8))
+                            Text(p.location).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
                         }
                     }
                 }

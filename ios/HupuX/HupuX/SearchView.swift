@@ -29,7 +29,7 @@ struct SearchView: View {
     private var header: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("搜索").font(.system(size: 20, weight: .heavy)).foregroundStyle(.white)
+                Text("搜索").font(.system(size: 20, weight: .heavy)).foregroundStyle(Theme.textPrimary)
                 Spacer()
             }
             .padding(.horizontal, 20)

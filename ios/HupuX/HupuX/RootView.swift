@@ -16,17 +16,17 @@ struct RootView: View {
         Self.applyTabBarAppearance()
     }
 
-    /// 底部 TabBar 外观：浅色靖蓝底、深色深灰蓝底、AMOLED 纯黑，白图标贴近安卓观感。
+    /// 底部 TabBar 外观：跟随页面背景色，图标用主题文字色，极简风。
     static func applyTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor(Theme.tabBarColor)
 
         let item = UITabBarItemAppearance()
-        item.normal.iconColor = UIColor.white.withAlphaComponent(0.65)
-        item.normal.titleTextAttributes = [.foregroundColor: UIColor.white.withAlphaComponent(0.65)]
-        item.selected.iconColor = .white
-        item.selected.titleTextAttributes = [.foregroundColor: UIColor.white]
+        item.normal.iconColor = UIColor(Theme.textSecondary)
+        item.normal.titleTextAttributes = [.foregroundColor: UIColor(Theme.textSecondary)]
+        item.selected.iconColor = UIColor(Theme.textPrimary)
+        item.selected.titleTextAttributes = [.foregroundColor: UIColor(Theme.textPrimary)]
         appearance.stackedLayoutAppearance = item
         appearance.inlineLayoutAppearance = item
         appearance.compactInlineLayoutAppearance = item
@@ -48,18 +48,20 @@ struct RootView: View {
             ProfileView()
                 .tabItem { Label("我的", systemImage: "person.fill") }
         }
-        // 导航栏按钮/返回箭头/控件强调色跟随品牌色。
-        // 底部 TabBar 的白色图标由上面的 UITabBarAppearance 显式控制，不受此影响。
+        // 导航栏按钮/返回箭头/控件强调色跟随主题。
+        // 底部 TabBar 的图标颜色由上面的 UITabBarAppearance 显式控制，不受此影响。
         .tint(Theme.brand)
-        // 主题状态（AMOLED 开关 / 系统深浅色）变化时整树重建，刷新配色与 TabBar 外观
-        .id("\(theme.amoled)-\(theme.systemDark)")
-        // AMOLED 强制深色；否则跟随系统深浅色自动切换
-        .preferredColorScheme(theme.amoled ? .dark : nil)
+        // 主题状态（外观模式 / AMOLED 开关 / 系统深浅色）变化时整树重建，刷新配色与 TabBar 外观
+        .id("\(theme.mode)-\(theme.amoled)-\(theme.systemDark)")
+        // 外观模式：跟随系统传 nil；浅色/深色强制指定；AMOLED 优先强制深色
+        .preferredColorScheme(theme.amoled ? .dark :
+            theme.mode == .light ? .light : theme.mode == .dark ? .dark : nil)
         .onAppear { theme.systemDark = systemScheme == .dark }
         .onChange(of: systemScheme) { _ in
             theme.systemDark = systemScheme == .dark
             Self.applyTabBarAppearance()
         }
         .onChange(of: theme.amoled) { _ in Self.applyTabBarAppearance() }
+        .onChange(of: theme.mode) { _ in Self.applyTabBarAppearance() }
     }
 }

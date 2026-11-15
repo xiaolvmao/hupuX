@@ -54,12 +54,12 @@ struct HomeView: View {
             HStack {
                 Text("虎扑")
                     .font(.system(size: 24, weight: .heavy))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Button { showSettings = true } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 20))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.textSecondary)
                 }
             }
             .padding(.horizontal, 20)
@@ -85,7 +85,7 @@ struct HomeView: View {
         let selected = selectedTab == index
         return Text(label)
             .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(selected ? Theme.textSecondary : .white)
+            .foregroundStyle(selected ? Theme.onBrand : Theme.textSecondary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background {
@@ -171,7 +171,7 @@ struct HomeView: View {
                             LinearGradient(colors: [.clear, .black.opacity(0.65)], startPoint: .center, endPoint: .bottom)
                             VStack(alignment: .leading, spacing: 4) {
                                 if !post.label.isEmpty {
-                                    Text(post.label).font(.system(size: 10)).foregroundStyle(.white)
+                                    Text(post.label).font(.system(size: 10)).foregroundStyle(Theme.onBrand)
                                         .padding(.horizontal, 6).padding(.vertical, 2)
                                         .background(Theme.brand).clipShape(RoundedRectangle(cornerRadius: 3))
                                 }

@@ -11,6 +11,7 @@ import Shared
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var session = Session.shared
+    @ObservedObject private var theme = ThemeSettings.shared
 
     // 预填当前已存 cookie（登录后回来能看到），对齐安卓
     @State private var cookieText = Deps.shared.cookieStorage.effectiveCookie
@@ -29,6 +30,7 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     statusCard
+                    appearanceCard
                     cookieCard
                     signatureCard
                     supportCard
@@ -53,6 +55,39 @@ struct SettingsView: View {
                 Text(session.isLoggedIn ? "已登录" : "未登录")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(session.isLoggedIn ? Theme.brand : Theme.textTertiary)
+            }
+        }
+    }
+
+    /// 外观设置：三档主题模式 + AMOLED 纯黑开关
+    private var appearanceCard: some View {
+        card {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("外观")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Theme.textPrimary)
+                Picker("主题模式", selection: $theme.mode) {
+                    ForEach(ThemeSettings.AppearanceMode.allCases, id: \.self) { m in
+                        Text(m.label).tag(m)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text(theme.mode == .system
+                     ? "深浅色跟随系统自动切换"
+                     : theme.mode == .dark ? "已强制深色模式" : "已强制浅色模式")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textTertiary)
+                Toggle(isOn: $theme.amoled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("AMOLED 纯黑")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("深色下使用纯黑背景，省电防烧屏")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                }
+                .tint(Theme.brand)
             }
         }
     }
@@ -85,7 +120,7 @@ struct SettingsView: View {
                         cookieSaved = true
                     } label: {
                         Text(cookieSaved ? "已保存 ✓" : "保存 Cookie")
-                            .font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
+                            .font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.onBrand)
                             .padding(.horizontal, 18).padding(.vertical, 9)
                             .background(Theme.brand).clipShape(Capsule())
                     }
@@ -124,7 +159,7 @@ struct SettingsView: View {
                     signatureSaved = true
                 } label: {
                     Text(signatureSaved ? "已保存 ✓" : "保存签名")
-                        .font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
+                        .font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.onBrand)
                         .padding(.horizontal, 18).padding(.vertical, 9)
                         .background(Theme.brand).clipShape(Capsule())
                 }

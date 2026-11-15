@@ -2,7 +2,7 @@
 //  Routes.swift
 //  HupuX
 //
-//  统一导航路由 + 通用组件（红色标题栏）。各 Tab 的 NavigationStack 共用 hupuDestinations()。
+//  统一导航路由 + 通用组件（中性标题栏）。各 Tab 的 NavigationStack 共用 hupuDestinations()。
 //
 
 import SwiftUI
@@ -47,7 +47,7 @@ extension View {
     }
 }
 
-/// 各 Tab 顶部的红色渐变标题栏（会延伸到状态栏下）。
+/// 各 Tab 顶部的中性标题栏（跟随页面背景色，延伸到状态栏下）。
 struct RedTitleBar<Trailing: View>: View {
     let title: String
     @ViewBuilder var trailing: () -> Trailing
@@ -61,9 +61,10 @@ struct RedTitleBar<Trailing: View>: View {
         HStack {
             Text(title)
                 .font(.system(size: 20, weight: .heavy))
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.textPrimary)
             Spacer()
             trailing()
+                .foregroundStyle(Theme.textSecondary)
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
