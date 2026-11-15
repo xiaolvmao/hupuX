@@ -83,7 +83,7 @@ class HupuDesktopScraper(
                 if (o.bool_("isHidden") == true || o.bool_("isDelete") == true) return@mapNotNull null
                 val author = o.obj("author")
                 val content = o.str("content") ?: ""
-                val (quoteUser, quoteContent) = parseQuoteFromJson(o)
+                val (quoteUser, quoteContent, quotePid) = parseQuoteFromJson(o)
                 Comment(
                     pid           = o.str("pid") ?: return@mapNotNull null,
                     username      = author?.str("puname") ?: "",
@@ -97,6 +97,7 @@ class HupuDesktopScraper(
                     authorPuid    = author?.str("puid") ?: "",
                     quoteUsername = quoteUser,
                     quoteContent  = quoteContent,
+                    quotePid      = quotePid,
                     desktopPage   = 1
                 )
             }
@@ -139,17 +140,22 @@ class HupuDesktopScraper(
 
     /**
      * 从子回复 JSON 对象中提取引用信息（用于 fetchDesktopSubReplies）。
-     * 尝试 replyQuoteContent / replyQuoteUser 字段名（与页面 data-admininfo 保持一致）。
+     * 实测 /api/v2/reply/reply 的引用字段为 "quote" 对象：
+     *   quote.pid（被引用评论 pid）、quote.author.puname、quote.content
+     * 兼容旧的 replyQuoteContent / quoteInfo 字段名。
      */
-    private fun parseQuoteFromJson(o: JsonObject): Pair<String?, String?> {
+    private fun parseQuoteFromJson(o: JsonObject): Triple<String?, String?, String?> {
+        val quotePid = o.obj("quote")?.str("pid")?.takeIf { it.isNotBlank() && it != "0" }
+            ?: o.obj("quoteInfo")?.str("pid")?.takeIf { it.isNotBlank() && it != "0" }
         val qc = o.str("replyQuoteContent")?.takeIf { it.isNotBlank() }
-        if (qc != null) return Pair(o.str("replyQuoteUser"), qc)
-        val qi = o.obj("quoteInfo")
-        if (qi != null) {
-            val content = qi.str("content")?.takeIf { it.isNotBlank() }
-            if (content != null) return Pair(qi.str("puname") ?: qi.str("username"), content)
+        if (qc != null) return Triple(o.str("replyQuoteUser"), qc, quotePid)
+        o.obj("quote")?.str("content")?.takeIf { it.isNotBlank() }?.let { content ->
+            return Triple(o.obj("quote")?.obj("author")?.str("puname"), content, quotePid)
         }
-        return Pair(null, null)
+        o.obj("quoteInfo")?.str("content")?.takeIf { it.isNotBlank() }?.let { content ->
+            return Triple(o.obj("quoteInfo")?.str("puname") ?: o.obj("quoteInfo")?.str("username"), content, quotePid)
+        }
+        return Triple(null, null, null)
     }
 
     /**

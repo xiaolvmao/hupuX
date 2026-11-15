@@ -387,6 +387,9 @@ struct PostDetailView: View {
                                 .padding(.vertical, 4)
                             CommentCardView(
                                 comment: s,
+                                isLiked: likedPids.contains(s.pid),
+                                onLike: canInteract ? { Task { await toggleLike(s) } } : nil,
+                                onReply: canInteract ? { replyTarget = s; showReply = true } : nil,
                                 onSubReplies: s.replyCount > 0 ? { toggleSubChain(s) } : nil,
                                 subRepliesExpanded: expandedSubs.contains(s.pid)
                             )
@@ -434,7 +437,12 @@ struct PostDetailView: View {
                             .fill(Theme.textTertiary.opacity(0.22))
                             .frame(width: 3)
                             .padding(.vertical, 4)
-                        CommentCardView(comment: r)
+                        CommentCardView(
+                            comment: r,
+                            isLiked: likedPids.contains(r.pid),
+                            onLike: canInteract ? { Task { await toggleLike(r) } } : nil,
+                            onReply: canInteract ? { replyTarget = r; showReply = true } : nil
+                        )
                     }
                 }
             }
