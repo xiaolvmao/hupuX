@@ -88,6 +88,11 @@ struct SettingsView: View {
                     }
                 }
                 .tint(Theme.brand)
+                if theme.amoled && theme.resolvedDark == false {
+                    Text("当前为浅色模式，AMOLED 纯黑仅在深色模式下生效")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.hot)
+                }
             }
         }
     }

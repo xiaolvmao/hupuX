@@ -61,9 +61,9 @@ final class ThemeSettings: ObservableObject {
         amoled = UserDefaults.standard.bool(forKey: Self.amoledKey)
     }
 
-    /// 当前实际是否深色：外观模式优先，AMOLED 强制深色
+    /// 当前实际是否深色：由外观模式决定。
+    /// 注意 AMOLED 只影响深色下的背景色（见 Theme.appBg），不改变深浅模式本身。
     var resolvedDark: Bool {
-        if amoled { return true }
         switch mode {
         case .dark:   return true
         case .light:  return false
@@ -75,7 +75,7 @@ final class ThemeSettings: ObservableObject {
 enum Theme {
     private static var settings: ThemeSettings { ThemeSettings.shared }
 
-    /// 深色配色开关：由外观模式决定，AMOLED 打开时强制深色
+    /// 深色配色开关：由外观模式决定（AMOLED 不再强制深色，只影响背景色）
     private static var dark: Bool { settings.resolvedDark }
 
     /// 强调色（中性灰，极简风；深色下提亮为浅灰）
