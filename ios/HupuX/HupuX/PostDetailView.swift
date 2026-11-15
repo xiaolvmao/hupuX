@@ -26,7 +26,9 @@ struct PostDetailView: View {
     @State private var showReply = false
     @State private var replyTarget: Comment?          // nil = 回复主帖
     @State private var sortMode = 0                   // 0 正序, 1 倒序, 2 最热
-    @State private var subReply: SubReplyContext?     // 楼中楼
+    @State private var expandedComments: Set<String> = []   // 已内联展开楼中楼的评论 pid
+    @State private var subRepliesCache: [String: [Comment]] = [:]
+    @State private var loadingSubPids: Set<String> = []
     @State private var commentPage = 1
     @State private var hasMoreComments = false
     @State private var loadingMoreComments = false
@@ -57,13 +59,18 @@ struct PostDetailView: View {
                                 isLiked: likedPids.contains(c.pid),
                                 onLike: canInteract ? { Task { await toggleLike(c) } } : nil,
                                 onReply: canInteract && c.desktopPage > 0 ? { replyTarget = c; showReply = true } : nil,
-                                onSubReplies: c.replyCount > 0 ? { subReply = SubReplyContext(comment: c) } : nil
+                                onSubReplies: c.replyCount > 0 ? { Task { await toggleSubReplies(c) } } : nil,
+                                subRepliesExpanded: expandedComments.contains(c.pid)
                             )
                             .padding(.horizontal, 14)
                             .onAppear {
                                 if sortMode == 0 && idx >= displayedComments.count - 3 {
                                     Task { await loadMoreComments() }
                                 }
+                            }
+                            // 楼中楼内联展开：子回复直接平铺在父评论下方，不再层层弹窗
+                            if expandedComments.contains(c.pid) {
+                                subRepliesSection(c)
                             }
                         }
                         if loadingMoreComments { ProgressView().padding() }
@@ -106,9 +113,6 @@ struct PostDetailView: View {
             ) { content in
                 await submitReply(content)
             }
-        }
-        .sheet(item: $subReply) { ctx in
-            SubRepliesSheet(tid: tid, parent: ctx.comment, useDesktop: canInteract)
         }
         .fullScreenCover(item: $viewerImage) { ImageViewer(url: $0.url) }
         .task { await load() }
@@ -298,6 +302,76 @@ struct PostDetailView: View {
         } catch {}
     }
 
+    // MARK: - 楼中楼内联展开
+
+    /// 展开/收起某条评论的楼中楼；首次展开时拉取子回复并缓存
+    private func toggleSubReplies(_ c: Comment) async {
+        if expandedComments.contains(c.pid) {
+            expandedComments.remove(c.pid)
+            return
+        }
+        expandedComments.insert(c.pid)
+        guard subRepliesCache[c.pid] == nil, !loadingSubPids.contains(c.pid) else { return }
+        loadingSubPids.insert(c.pid)
+        defer { loadingSubPids.remove(c.pid) }
+        do {
+            subRepliesCache[c.pid] = canInteract
+                ? try await Deps.shared.desktopScraper.fetchDesktopSubReplies(tid: tid, parentPid: c.pid)
+                : try await Deps.shared.hupuScraper.fetchSubReplies(tid: tid, parentPid: c.pid)
+        } catch {
+            subRepliesCache[c.pid] = []
+        }
+    }
+
+    /// 楼中楼内联展开区：缩进 + 左侧引导竖线，子回复平铺在父评论下方。
+    /// 子回复之间互为回复由引用块（@用户名 + 摘要）表达，无需再点开一层。
+    @ViewBuilder private func subRepliesSection(_ parent: Comment) -> some View {
+        if loadingSubPids.contains(parent.pid) {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("加载回复…").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 48).padding(.vertical, 6)
+        } else if let subs = subRepliesCache[parent.pid] {
+            VStack(alignment: .leading, spacing: 6) {
+                if subs.isEmpty {
+                    Text("暂无回复")
+                        .font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
+                        .padding(.leading, 34).padding(.vertical, 6)
+                } else {
+                    ForEach(Array(subs.enumerated()), id: \.offset) { _, s in
+                        HStack(alignment: .top, spacing: 8) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Theme.textTertiary.opacity(0.35))
+                                .frame(width: 3)
+                                .padding(.vertical, 4)
+                            CommentCardView(comment: s)
+                        }
+                    }
+                    if subs.count < parent.replyCount {
+                        Text("仅展开前 \(subs.count) 条，共 \(parent.replyCount) 条回复")
+                            .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                            .padding(.leading, 14)
+                    }
+                    Button {
+                        expandedComments.remove(parent.pid)
+                    } label: {
+                        HStack(spacing: 2) {
+                            Image(systemName: "chevron.up")
+                                .font(.system(size: 9, weight: .semibold))
+                            Text("收起回复")
+                        }
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.brand)
+                    }
+                    .padding(.leading, 14)
+                }
+            }
+            .padding(.leading, 22)
+            .padding(.trailing, 8)
+        }
+    }
+
     private func submitReply(_ content: String) async {
         guard canInteract else { return }
         let quoteId = replyTarget?.pid ?? "0"
@@ -403,6 +477,7 @@ struct CommentCardView: View {
     var onLike: (() -> Void)? = nil
     var onReply: (() -> Void)? = nil
     var onSubReplies: (() -> Void)? = nil
+    var subRepliesExpanded: Bool = false
     @State private var viewerImage: ViewerImage?
 
     /// 点头像/昵称进发言人主页（对齐安卓：有 puid 且是桌面版评论才能点）
@@ -477,11 +552,15 @@ struct CommentCardView: View {
                     if comment.replyCount > 0 {
                         if let onSubReplies {
                             Button(action: onSubReplies) {
-                                Text("\(comment.replyCount) 回复 ›")
-                                    .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.brand)
+                                HStack(spacing: 2) {
+                                    Text(subRepliesExpanded ? "收起回复" : "\(comment.replyCount) 条回复")
+                                    Image(systemName: subRepliesExpanded ? "chevron.down" : "chevron.right")
+                                        .font(.system(size: 9, weight: .semibold))
+                                }
+                                .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.brand)
                             }
                         } else {
-                            Text("\(comment.replyCount) 回复").font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                            Text("\(comment.replyCount) 条回复").font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
                         }
                     }
                 }
@@ -512,76 +591,6 @@ struct CommentCardView: View {
         } else {
             Text("👍 \(count)").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
         }
-    }
-}
-
-// MARK: - 楼中楼（子回复）
-
-struct SubReplyContext: Identifiable {
-    let id = UUID()
-    let comment: Comment
-}
-
-struct SubRepliesSheet: View {
-    let tid: String
-    let parent: Comment
-    let useDesktop: Bool
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var replies: [Comment] = []
-    @State private var loading = true
-    @State private var deeper: SubReplyContext?   // 再往里一层
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 10) {
-                    CommentCardView(comment: parent)
-                        .padding(.horizontal, 14).padding(.top, 10)
-                    HStack {
-                        Text("全部回复 \(parent.replyCount)")
-                            .font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.textPrimary)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-
-                    if loading {
-                        ProgressView().padding()
-                    } else if replies.isEmpty {
-                        Text("暂无回复").font(.system(size: 13)).foregroundStyle(Theme.textTertiary).padding()
-                    } else {
-                        ForEach(Array(replies.enumerated()), id: \.offset) { _, c in
-                            CommentCardView(
-                                comment: c,
-                                onSubReplies: c.replyCount > 0 ? { deeper = SubReplyContext(comment: c) } : nil
-                            )
-                            .padding(.horizontal, 14)
-                        }
-                    }
-                }
-                .padding(.bottom, 20)
-            }
-            .background(Theme.appBg)
-            .navigationTitle("回复详情")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { dismiss() } } }
-            .hupuDestinations()
-            .sheet(item: $deeper) { ctx in
-                SubRepliesSheet(tid: tid, parent: ctx.comment, useDesktop: useDesktop)
-            }
-            .task { await load() }
-        }
-    }
-
-    private func load() async {
-        do {
-            if useDesktop {
-                replies = try await Deps.shared.desktopScraper.fetchDesktopSubReplies(tid: tid, parentPid: parent.pid)
-            } else {
-                replies = try await Deps.shared.hupuScraper.fetchSubReplies(tid: tid, parentPid: parent.pid)
-            }
-        } catch {}
-        loading = false
     }
 }
 
