@@ -111,10 +111,11 @@ struct RootView: View {
     /// 是系统外观的可靠来源；取不到时回退到环境值。
     private func syncSystemDark() {
         var dark = envScheme == .dark
-        if let screen = UIApplication.shared.connectedScenes
-            .compactMap({ ($0 as? UIWindowScene)?.screens.first })
-            .first,
-           screen.traitCollection.userInterfaceStyle != .unspecified {
+        let screen = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { scene in scene.windows.map { $0.screen } }
+            .first
+        if let screen, screen.traitCollection.userInterfaceStyle != .unspecified {
             dark = (screen.traitCollection.userInterfaceStyle == .dark)
         }
         if theme.systemDark != dark {
