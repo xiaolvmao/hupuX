@@ -88,7 +88,7 @@ struct ImageViewer: View {
 
     private var zoomGesture: some Gesture {
         MagnificationGesture()
-            .onChanged { scale = min(max(baseScale * $0.magnification, 1), 8) }
+            .onChanged { scale = min(max(baseScale * $0, 1), 8) }
             .onEnded { _ in
                 baseScale = scale
                 if scale <= 1.01 { resetZoom() }
