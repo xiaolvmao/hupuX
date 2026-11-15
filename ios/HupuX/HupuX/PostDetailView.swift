@@ -86,11 +86,11 @@ struct PostDetailView: View {
                     HStack(spacing: 16) {
                         Button { Task { await toggleCollect() } } label: {
                             Image(systemName: isCollected ? "bookmark.fill" : "bookmark")
-                                .foregroundStyle(isCollected ? Theme.red : Theme.textSecondary)
+                                .foregroundStyle(isCollected ? Theme.brand : Theme.textSecondary)
                         }
                         Button { Task { await toggleRecommend() } } label: {
                             Image(systemName: isRecommended ? "hand.thumbsup.fill" : "hand.thumbsup")
-                                .foregroundStyle(isRecommended ? Theme.red : Theme.textSecondary)
+                                .foregroundStyle(isRecommended ? Theme.brand : Theme.textSecondary)
                         }
                     }
                 }
@@ -146,9 +146,9 @@ struct PostDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             if !post.topicName.isEmpty {
                 Text(post.topicName)
-                    .font(.system(size: 11)).foregroundStyle(Theme.red)
+                    .font(.system(size: 11)).foregroundStyle(Theme.brand)
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(Theme.red.opacity(0.08))
+                    .background(Theme.brand.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                     .padding(.bottom, 10)
             }
@@ -207,7 +207,7 @@ struct PostDetailView: View {
             .font(.system(size: 12, weight: sel ? .bold : .regular))
             .foregroundStyle(sel ? .white : Theme.textSecondary)
             .padding(.horizontal, 10).padding(.vertical, 4)
-            .background(sel ? Theme.red : Theme.appBg)
+            .background(sel ? Theme.brand : Theme.appBg)
             .clipShape(Capsule())
             .onTapGesture { sortMode = mode }
     }
@@ -216,7 +216,7 @@ struct PostDetailView: View {
         VStack(spacing: 12) {
             Text("加载失败").font(.headline).foregroundStyle(Theme.textPrimary)
             Text(errorText ?? "").font(.caption).foregroundStyle(Theme.textSecondary).multilineTextAlignment(.center)
-            Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+            Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
         }
         .padding().frame(maxWidth: .infinity, maxHeight: .infinity).background(Theme.appBg)
     }
@@ -427,7 +427,7 @@ struct CommentCardView: View {
                     if comment.isAuthor {
                         Text("楼主").font(.system(size: 10)).foregroundStyle(.white)
                             .padding(.horizontal, 4).padding(.vertical, 1)
-                            .background(Theme.red).clipShape(RoundedRectangle(cornerRadius: 3))
+                            .background(Theme.brand).clipShape(RoundedRectangle(cornerRadius: 3))
                     }
                     Spacer(minLength: 4)
                     likeButton
@@ -435,7 +435,7 @@ struct CommentCardView: View {
 
                 if let quote = comment.quoteContent, !quote.isEmpty {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("@\(comment.quoteUsername ?? "")").font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.red)
+                        Text("@\(comment.quoteUsername ?? "")").font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.brand)
                         Text(HTMLText.plain(quote)).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 7)
@@ -478,7 +478,7 @@ struct CommentCardView: View {
                         if let onSubReplies {
                             Button(action: onSubReplies) {
                                 Text("\(comment.replyCount) 回复 ›")
-                                    .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.red)
+                                    .font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.brand)
                             }
                         } else {
                             Text("\(comment.replyCount) 回复").font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
@@ -507,7 +507,7 @@ struct CommentCardView: View {
         let count = comment.lights + (isLiked ? 1 : 0)
         if let onLike {
             Button(action: onLike) {
-                Text("👍 \(count)").font(.system(size: 12)).foregroundStyle(isLiked ? Theme.red : Theme.textTertiary)
+                Text("👍 \(count)").font(.system(size: 12)).foregroundStyle(isLiked ? Theme.brand : Theme.textTertiary)
             }
         } else {
             Text("👍 \(count)").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)

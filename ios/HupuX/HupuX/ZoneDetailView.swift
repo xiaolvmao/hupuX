@@ -53,7 +53,7 @@ struct ZoneDetailView: View {
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(width: 56, height: 56)
-                        .background(Theme.red)
+                        .background(Theme.brand)
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.25), radius: 5, y: 2)
                 }
@@ -69,7 +69,7 @@ struct ZoneDetailView: View {
                 Button { Task { await toggleFollow() } } label: {
                     Text(isFollowed ? "已关注" : "关注")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isFollowed ? Theme.textSecondary : Theme.red)
+                        .foregroundStyle(isFollowed ? Theme.textSecondary : Theme.brand)
                 }
             }
         }
@@ -87,7 +87,7 @@ struct ZoneDetailView: View {
     }
 
     private func headerCard(_ zone: ZoneDetail) -> some View {
-        let bg = Color(hexString: zone.bgColor) ?? Theme.red
+        let bg = Color(hexString: zone.bgColor) ?? Theme.brand
         return HStack(spacing: 12) {
             AsyncImage(url: URL(string: zone.logo)) { phase in
                 if case .success(let img) = phase { img.resizable().scaledToFill() }
@@ -132,7 +132,7 @@ struct ZoneDetailView: View {
             .font(.system(size: 13, weight: sel ? .bold : .regular))
             .foregroundStyle(sel ? .white : Theme.textSecondary)
             .padding(.horizontal, 14).padding(.vertical, 6)
-            .background(sel ? Theme.red : Theme.cardBg)
+            .background(sel ? Theme.brand : Theme.cardBg)
             .clipShape(Capsule())
             .onTapGesture {
                 guard sort != value else { return }

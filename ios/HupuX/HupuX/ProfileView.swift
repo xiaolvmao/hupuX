@@ -28,7 +28,7 @@ struct ProfileView: View {
                 } else {
                     VStack(spacing: 12) {
                         Text(errorText ?? "加载失败").font(.caption).foregroundStyle(Theme.textSecondary)
-                        Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+                        Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
                         Button("退出登录") { logout() }.foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -74,7 +74,7 @@ struct ProfileView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 40).padding(.vertical, 12)
-                    .background(Theme.red)
+                    .background(Theme.brand)
                     .clipShape(Capsule())
             }
             .padding(.top, 6)
@@ -191,7 +191,7 @@ struct ProfileView: View {
     private func entryRow(icon: String, label: String, route: ProfileRoute) -> some View {
         NavigationLink(value: route) {
             HStack(spacing: 12) {
-                Image(systemName: icon).font(.system(size: 17)).foregroundStyle(Theme.red).frame(width: 24)
+                Image(systemName: icon).font(.system(size: 17)).foregroundStyle(Theme.brand).frame(width: 24)
                 Text(label).font(.system(size: 15)).foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 13)).foregroundStyle(Theme.textTertiary)

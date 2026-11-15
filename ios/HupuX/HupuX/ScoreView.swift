@@ -47,8 +47,8 @@ struct ScoreView: View {
                     VStack(spacing: 5) {
                         Text(t.label)
                             .font(.system(size: 15, weight: sel ? .bold : .regular))
-                            .foregroundStyle(sel ? Theme.red : Theme.textSecondary)
-                        Capsule().fill(sel ? Theme.red : .clear).frame(width: 20, height: 3)
+                            .foregroundStyle(sel ? Theme.brand : Theme.textSecondary)
+                        Capsule().fill(sel ? Theme.brand : .clear).frame(width: 20, height: 3)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 8)
                     .contentShape(Rectangle())
@@ -72,8 +72,8 @@ struct ScoreView: View {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             VStack(spacing: 12) {
-                Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.red)
-                Button("重试") { Task { await load(tag) } }.foregroundStyle(Theme.red)
+                Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.brand)
+                Button("重试") { Task { await load(tag) } }.foregroundStyle(Theme.brand)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -87,7 +87,7 @@ struct ScoreView: View {
                         // 「今天」标红，进来就能一眼看出落点在哪
                         Text(day.label.isEmpty ? day.date : day.label)
                             .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(day.isToday ? Theme.red : Theme.textSecondary)
+                            .foregroundStyle(day.isToday ? Theme.brand : Theme.textSecondary)
                             .padding(.horizontal, 20).padding(.top, 6)
                             .id(day.date)
                         ForEach(Array(day.matches.enumerated()), id: \.offset) { _, m in
@@ -159,7 +159,7 @@ private struct MatchCard: View {
                 Text(match.isFinished ? match.statusDesc
                      : Self.timeFmt.string(from: Date(timeIntervalSince1970: Double(match.startTimeMillis) / 1000)))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(match.isFinished ? Theme.textTertiary : Theme.red)
+                    .foregroundStyle(match.isFinished ? Theme.textTertiary : Theme.brand)
             }
             .padding(.bottom, 10)
 
@@ -248,8 +248,8 @@ struct ScoreBoardView: View {
                 placeholder("这场比赛还没有评分")
             } else {
                 VStack(spacing: 12) {
-                    Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.red)
-                    Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+                    Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.brand)
+                    Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -363,8 +363,8 @@ struct ScoreItemView: View {
                 .safeAreaInset(edge: .bottom) { inputBar }
             } else {
                 VStack(spacing: 12) {
-                    Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.red)
-                    Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+                    Text(errorText ?? "加载失败").font(.system(size: 14)).foregroundStyle(Theme.brand)
+                    Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -423,7 +423,7 @@ struct ScoreItemView: View {
                         Text(d.myScore > 0 ? "修改评分" : "打分")
                             .font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
                             .padding(.horizontal, 16).padding(.vertical, 7)
-                            .background(Theme.red).clipShape(Capsule())
+                            .background(Theme.brand).clipShape(Capsule())
                     }
                     .disabled(submitting)
                 } else {
@@ -447,7 +447,7 @@ struct ScoreItemView: View {
                 HStack {
                     Text("回复 \(replyTo.userName)").font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
                     Spacer()
-                    Button("取消") { self.replyTo = nil }.font(.system(size: 12)).foregroundStyle(Theme.red)
+                    Button("取消") { self.replyTo = nil }.font(.system(size: 12)).foregroundStyle(Theme.brand)
                 }
                 .padding(.horizontal, 16).padding(.top, 6)
             }
@@ -463,7 +463,7 @@ struct ScoreItemView: View {
                 let empty = draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 Button("发送") { Task { await publish() } }
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(empty ? Theme.textTertiary : Theme.red)
+                    .foregroundStyle(empty ? Theme.textTertiary : Theme.brand)
                     .disabled(empty || submitting)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -615,7 +615,7 @@ private struct ScoreCommentRow: View {
                 Button(action: onLight) {
                     Text(comment.lightCount > 0 ? "👍 \(comment.lightCount)" : "👍")
                         .font(.system(size: 12))
-                        .foregroundStyle(comment.hasLight ? Theme.red : Theme.textTertiary)
+                        .foregroundStyle(comment.hasLight ? Theme.brand : Theme.textTertiary)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                 }
             }
@@ -671,7 +671,7 @@ private struct RatingSheet: View {
                 }
                 Button("关闭") { dismiss() }.foregroundStyle(Theme.textSecondary)
                 Button("确定") { onPick(picked) }
-                    .fontWeight(.bold).foregroundStyle(picked > 0 ? Theme.red : Theme.textTertiary)
+                    .fontWeight(.bold).foregroundStyle(picked > 0 ? Theme.brand : Theme.textTertiary)
                     .disabled(picked == 0)
             }
             .font(.system(size: 15))
@@ -707,7 +707,7 @@ struct TodayScoreStrip: View {
                 Spacer(minLength: 0)
                 Text(m.hasScore ? m.status : timeText(m.desc))
                     .font(.system(size: 10))
-                    .foregroundStyle(m.hasScore ? Theme.textTertiary : Theme.red)
+                    .foregroundStyle(m.hasScore ? Theme.textTertiary : Theme.brand)
             }
             .padding(.bottom, 2)
             teamLine(m.homeLogo, m.homeName, m.homeScore)
@@ -767,8 +767,8 @@ private func avatarWithTeam(_ avatar: String, team: String, size: CGFloat) -> so
 }
 
 private func labelTag(_ text: String) -> some View {
-    Text(text).font(.system(size: 10)).foregroundStyle(Theme.red)
+    Text(text).font(.system(size: 10)).foregroundStyle(Theme.brand)
         .padding(.horizontal, 6).padding(.vertical, 2)
-        .background(Theme.red.opacity(0.08))
+        .background(Theme.brand.opacity(0.08))
         .clipShape(Capsule())
 }

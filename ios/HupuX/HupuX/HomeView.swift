@@ -56,11 +56,6 @@ struct HomeView: View {
                     .font(.system(size: 24, weight: .heavy))
                     .foregroundStyle(.white)
                 Spacer()
-                Button { ThemeSettings.shared.toggle() } label: {
-                    Image(systemName: ThemeSettings.shared.amoled ? "sun.max" : "moon.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.white)
-                }
                 Button { showSettings = true } label: {
                     Image(systemName: "gearshape")
                         .font(.system(size: 20))
@@ -125,7 +120,7 @@ struct HomeView: View {
                 Text("加载失败").font(.headline).foregroundStyle(Theme.textPrimary)
                 Text(errorText).font(.caption).foregroundStyle(Theme.textSecondary)
                     .multilineTextAlignment(.center)
-                Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+                Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
             }
             .padding().frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -178,7 +173,7 @@ struct HomeView: View {
                                 if !post.label.isEmpty {
                                     Text(post.label).font(.system(size: 10)).foregroundStyle(.white)
                                         .padding(.horizontal, 6).padding(.vertical, 2)
-                                        .background(Theme.red).clipShape(RoundedRectangle(cornerRadius: 3))
+                                        .background(Theme.brand).clipShape(RoundedRectangle(cornerRadius: 3))
                                 }
                                 Text(post.title).font(.system(size: 13, weight: .medium))
                                     .foregroundStyle(.white).lineLimit(2)
@@ -243,7 +238,7 @@ struct HomeView: View {
         HStack(spacing: 14) {
             Text("\(item.rank)")
                 .font(.system(size: 18, weight: .heavy))
-                .foregroundStyle(item.rank <= 3 ? Theme.red : Theme.textTertiary)
+                .foregroundStyle(item.rank <= 3 ? Theme.brand : Theme.textTertiary)
                 .frame(width: 26)
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.tagName)

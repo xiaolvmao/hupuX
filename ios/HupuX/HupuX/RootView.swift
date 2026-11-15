@@ -10,12 +10,13 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var theme = ThemeSettings.shared
+    @Environment(\.colorScheme) private var systemScheme
 
     init() {
         Self.applyTabBarAppearance()
     }
 
-    /// 底部 TabBar 外观：默认红底、AMOLED 下纯黑底，白图标贴近安卓观感。
+    /// 底部 TabBar 外观：浅色靖蓝底、深色深灰蓝底、AMOLED 纯黑，白图标贴近安卓观感。
     static func applyTabBarAppearance() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -47,12 +48,18 @@ struct RootView: View {
             ProfileView()
                 .tabItem { Label("我的", systemImage: "person.fill") }
         }
-        // 导航栏按钮/返回箭头用红色（之前误用 .white 导致浅色栏上看不见）。
+        // 导航栏按钮/返回箭头/控件强调色跟随品牌色。
         // 底部 TabBar 的白色图标由上面的 UITabBarAppearance 显式控制，不受此影响。
-        .tint(Theme.red)
-        // 切换 AMOLED 时：整树重建 + 刷新 TabBar 外观 + 系统组件跟随深浅色
-        .id(theme.amoled)
-        .preferredColorScheme(theme.amoled ? .dark : .light)
+        .tint(Theme.brand)
+        // 主题状态（AMOLED 开关 / 系统深浅色）变化时整树重建，刷新配色与 TabBar 外观
+        .id("\(theme.amoled)-\(theme.systemDark)")
+        // AMOLED 强制深色；否则跟随系统深浅色自动切换
+        .preferredColorScheme(theme.amoled ? .dark : nil)
+        .onAppear { theme.systemDark = systemScheme == .dark }
+        .onChange(of: systemScheme) { _ in
+            theme.systemDark = systemScheme == .dark
+            Self.applyTabBarAppearance()
+        }
         .onChange(of: theme.amoled) { _ in Self.applyTabBarAppearance() }
     }
 }

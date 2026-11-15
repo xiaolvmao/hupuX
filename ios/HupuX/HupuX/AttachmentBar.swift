@@ -50,14 +50,14 @@ struct ImageAttachBar: View {
                 PhotosPicker(selection: $picker, maxSelectionCount: 9, matching: .images) {
                     Label("添加图片", systemImage: "photo")
                         .font(.system(size: 14))
-                        .foregroundStyle(Theme.red)
+                        .foregroundStyle(Theme.brand)
                 }
                 if uploading {
                     ProgressView().controlSize(.small)
                     Text("上传中…").font(.system(size: 12)).foregroundStyle(Theme.textTertiary)
                 }
                 if let errorText {
-                    Text(errorText).font(.system(size: 12)).foregroundStyle(Theme.red)
+                    Text(errorText).font(.system(size: 12)).foregroundStyle(Theme.brand)
                 }
                 Spacer()
             }

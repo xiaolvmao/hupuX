@@ -65,7 +65,7 @@ struct NewPostView: View {
                     }
 
                     if let errorText {
-                        Text(errorText).font(.system(size: 12)).foregroundStyle(Theme.red)
+                        Text(errorText).font(.system(size: 12)).foregroundStyle(Theme.brand)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
@@ -114,7 +114,7 @@ struct NewPostView: View {
             } else {
                 PhotosPicker(selection: $videoItem, matching: .videos) {
                     Label(uploadingVideo ? "视频上传中 \(Int(videoProgress * 100))%" : "添加视频", systemImage: "video")
-                        .font(.system(size: 14)).foregroundStyle(uploadingVideo ? Theme.textTertiary : Theme.red)
+                        .font(.system(size: 14)).foregroundStyle(uploadingVideo ? Theme.textTertiary : Theme.brand)
                 }
                 .disabled(uploadingVideo)
                 if uploadingVideo {
@@ -138,7 +138,7 @@ struct NewPostView: View {
             .font(.system(size: 13, weight: sel ? .bold : .regular))
             .foregroundStyle(sel ? .white : Theme.textSecondary)
             .padding(.horizontal, 14).padding(.vertical, 6)
-            .background(sel ? Theme.red : Theme.appBg)
+            .background(sel ? Theme.brand : Theme.appBg)
             .clipShape(Capsule())
             .onTapGesture { creationType = value }
     }

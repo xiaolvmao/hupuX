@@ -2,8 +2,8 @@
 //  Theme.swift
 //  HupuX
 //
-//  配色对齐安卓版 theme/Theme.kt。
-//  支持 AMOLED 省电黑主题：开启后背景/卡片/顶栏变纯黑，红色仅作小面积强调，防烧屏。
+//  主色由虎扑红改为靛蓝。
+//  深色模式跟随系统自动切换，AMOLED 省电黑在设置中可强制开启（纯黑防烧屏）。
 //
 
 import SwiftUI
@@ -21,14 +21,18 @@ extension Color {
     }
 }
 
-/// 全局主题设置（AMOLED 省电黑开关），持久化在 UserDefaults。
-/// 切换后由 RootView 通过 `.id(theme.amoled)` 触发整树重建，
-/// 使下面 Theme 的计算属性重新取值。
+/// 全局主题设置，持久化在 UserDefaults。
+/// systemDark 由 RootView 从环境 colorScheme 同步而来，不持久化、随系统实时变化；
+/// 任一主题状态变化时由 RootView 通过 `.id` 触发整树重建，使下面 Theme 的计算属性重新取值。
 final class ThemeSettings: ObservableObject {
     static let shared = ThemeSettings()
 
     private static let key = "amoled_theme"
 
+    /// 系统当前是否处于深色模式（由 RootView 同步，自动跟随系统）
+    @Published var systemDark = false
+
+    /// 强制纯黑省电模式（设置中的 AMOLED 开关）
     @Published var amoled: Bool {
         didSet { UserDefaults.standard.set(amoled, forKey: Self.key) }
     }
@@ -43,33 +47,50 @@ final class ThemeSettings: ObservableObject {
 enum Theme {
     private static var amoled: Bool { ThemeSettings.shared.amoled }
 
-    // 品牌强调色（两种主题都用红，小面积）
-    static let red        = Color(hex: 0xEA0E20)
-    static let redDark    = Color(hex: 0xBB000F)
-    static let pillRed     = Color(hex: 0xFF3B4C)
-    static let pillRedDark = Color(hex: 0xBB0012)
+    /// 深色配色开关：跟随系统深浅色，AMOLED 打开时强制深色
+    private static var dark: Bool { amoled || ThemeSettings.shared.systemDark }
+
+    // 品牌强调色（靛蓝，小面积强调）
+    static let brand          = Color(hex: 0x4A5FE0)
+    static let brandDark      = Color(hex: 0x3A4BC2)
+    static let pillBrand      = Color(hex: 0x5B6CE8)
+    static let pillBrandDark  = Color(hex: 0x3846BC)
 
     // 随主题变化的表面/文字色
-    static var appBg:         Color { amoled ? Color(hex: 0x000000) : Color(hex: 0xEEF1FB) }
-    static var cardBg:        Color { amoled ? Color(hex: 0x000000) : Color(hex: 0xFFFFFF) }
-    static var textPrimary:   Color { amoled ? Color(hex: 0xE4E8F2) : Color(hex: 0x1A1C2E) }
-    static var textSecondary: Color { amoled ? Color(hex: 0x8A90A0) : Color(hex: 0x6B7080) }
-    static var textTertiary:  Color { amoled ? Color(hex: 0x5A6070) : Color(hex: 0xABB0BF) }
-    static var placeholder:   Color { amoled ? Color(hex: 0x121212) : Color(hex: 0xF4F5FA) }
-    /// 热度 / 高分（深色下提亮，保证对比度）
-    static var hot:           Color { amoled ? Color(hex: 0xFF6B5E) : Color(hex: 0xF04438) }
+    static var appBg:         Color {
+        amoled ? Color(hex: 0x000000) : dark ? Color(hex: 0x0F1016) : Color(hex: 0xF0F2FA)
+    }
+    static var cardBg:        Color {
+        amoled ? Color(hex: 0x000000) : dark ? Color(hex: 0x1A1D27) : Color(hex: 0xFFFFFF)
+    }
+    static var textPrimary:   Color { dark ? Color(hex: 0xE4E8F2) : Color(hex: 0x1A1C2E) }
+    static var textSecondary: Color { dark ? Color(hex: 0x8A90A0) : Color(hex: 0x6B7080) }
+    static var textTertiary:  Color { dark ? Color(hex: 0x5F6578) : Color(hex: 0xABB0BF) }
+    static var placeholder:   Color {
+        amoled ? Color(hex: 0x121212) : dark ? Color(hex: 0x1E222E) : Color(hex: 0xF4F5FA)
+    }
+    /// 热度 / 高分（语义色保持红橙系；深色下提亮，保证对比度）
+    static var hot:           Color { dark ? Color(hex: 0xFF6B5E) : Color(hex: 0xF04438) }
 
-    /// 顶栏品牌渐变色（AMOLED 下为纯黑，防大块红色烧屏）
-    static var headerColors: [Color] { amoled ? [.black, .black] : [red, redDark] }
-    /// 底部 TabBar 背景（AMOLED 下纯黑）
-    static var tabBarColor: Color { amoled ? .black : red }
+    /// 顶栏品牌渐变色（浅色：靛蓝渐变；深色：低调深蓝渐变；AMOLED：纯黑，防大块色块烧屏）
+    static var headerColors: [Color] {
+        amoled ? [.black, .black]
+            : dark ? [Color(hex: 0x232A50), Color(hex: 0x1A2044)]
+            : [brand, brandDark]
+    }
+    /// 底部 TabBar 背景（浅色靛蓝；深色沉稳深灰蓝；AMOLED 纯黑）
+    static var tabBarColor: Color {
+        amoled ? .black : dark ? Color(hex: 0x161926) : brand
+    }
 
     /// 分段 pill：选中态（白塑料，两主题一致，黑底醒目）
     static var pillSelectedColors: [Color] { [.white, Color(hex: 0xD8D8D8)] }
-    /// 分段 pill：未选中态（AMOLED 用深灰、否则红）
+    /// 分段 pill：未选中态
     static var pillUnselectedColors: [Color] {
-        amoled ? [Color(hex: 0x2A2D3A), Color(hex: 0x1D2028)] : [pillRed, pillRedDark]
+        amoled ? [Color(hex: 0x2A2D3A), Color(hex: 0x1D2028)]
+            : dark ? [Color(hex: 0x2E3448), Color(hex: 0x222738)]
+            : [pillBrand, pillBrandDark]
     }
-    /// 帖子正文 HTML 文字色（AMOLED/深色下浅色，否则深色）
-    static var bodyTextHex: String { amoled ? "#EBEBF0" : "#1A1C2E" }
+    /// 帖子正文 HTML 文字色（深色下浅色，否则深色）
+    static var bodyTextHex: String { dark ? "#EBEBF0" : "#1A1C2E" }
 }

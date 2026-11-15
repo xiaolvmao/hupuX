@@ -52,7 +52,7 @@ struct SettingsView: View {
                 Spacer()
                 Text(session.isLoggedIn ? "已登录" : "未登录")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(session.isLoggedIn ? Theme.red : Theme.textTertiary)
+                    .foregroundStyle(session.isLoggedIn ? Theme.brand : Theme.textTertiary)
             }
         }
     }
@@ -87,7 +87,7 @@ struct SettingsView: View {
                         Text(cookieSaved ? "已保存 ✓" : "保存 Cookie")
                             .font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
                             .padding(.horizontal, 18).padding(.vertical, 9)
-                            .background(Theme.red).clipShape(Capsule())
+                            .background(Theme.brand).clipShape(Capsule())
                     }
                     Button {
                         session.logout()
@@ -126,7 +126,7 @@ struct SettingsView: View {
                     Text(signatureSaved ? "已保存 ✓" : "保存签名")
                         .font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
                         .padding(.horizontal, 18).padding(.vertical, 9)
-                        .background(Theme.red).clipShape(Capsule())
+                        .background(Theme.brand).clipShape(Capsule())
                 }
             }
         }
@@ -164,18 +164,18 @@ struct SettingsView: View {
                     } else {
                         Button("检查更新") { Task { await checkUpdate() } }
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(Theme.red)
+                            .foregroundStyle(Theme.brand)
                     }
                 }
                 if let msg = updateMessage {
                     HStack {
                         Text(msg).font(.system(size: 12))
-                            .foregroundStyle(hasUpdate ? Theme.red : Theme.textSecondary)
+                            .foregroundStyle(hasUpdate ? Theme.brand : Theme.textSecondary)
                         Spacer()
                         if hasUpdate, let url = URL(string: releaseUrl) {
                             Link("去下载", destination: url)
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Theme.red)
+                                .foregroundStyle(Theme.brand)
                         }
                     }
                 }
@@ -184,7 +184,7 @@ struct SettingsView: View {
                     Spacer()
                     Link("github.com/bidabrain/hupuX", destination: URL(string: "https://github.com/bidabrain/hupuX")!)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Theme.red)
+                        .foregroundStyle(Theme.brand)
                 }
             }
         }

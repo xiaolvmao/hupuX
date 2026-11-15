@@ -36,11 +36,11 @@ struct MessageView: View {
                 let isSel = selected == tab.key
                 Text(tab.label)
                     .font(.system(size: 14, weight: isSel ? .bold : .regular))
-                    .foregroundStyle(isSel ? Theme.red : Theme.textSecondary)
+                    .foregroundStyle(isSel ? Theme.brand : Theme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .overlay(alignment: .bottom) {
-                        if isSel { Rectangle().fill(Theme.red).frame(height: 2).frame(width: 28) }
+                        if isSel { Rectangle().fill(Theme.brand).frame(height: 2).frame(width: 28) }
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {

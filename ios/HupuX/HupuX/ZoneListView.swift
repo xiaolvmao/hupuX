@@ -33,7 +33,7 @@ struct ZoneListView: View {
             VStack(spacing: 12) {
                 Text("加载失败").foregroundStyle(Theme.textPrimary)
                 Text(errorText).font(.caption).foregroundStyle(Theme.textSecondary)
-                Button("重试") { Task { await load() } }.foregroundStyle(Theme.red)
+                Button("重试") { Task { await load() } }.foregroundStyle(Theme.brand)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
