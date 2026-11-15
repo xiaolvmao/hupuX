@@ -27,8 +27,10 @@ struct PostDetailView: View {
     @State private var replyTarget: Comment?          // nil = 回复主帖
     @State private var sortMode = 0                   // 0 正序, 1 倒序, 2 最热
     @State private var expandedComments: Set<String> = []   // 已内联展开楼中楼的评论 pid
+    @State private var expandedSubs: Set<String> = []       // 已展开回复链的子回复 pid
     @State private var subRepliesCache: [String: [Comment]] = [:]
     @State private var loadingSubPids: Set<String> = []
+    @State private var toast: String?                       // 操作失败提示
     @State private var commentPage = 1
     @State private var hasMoreComments = false
     @State private var loadingMoreComments = false
@@ -98,7 +100,27 @@ struct PostDetailView: View {
             }
         }
         .fullScreenCover(item: $viewerImage) { ImageViewer(url: $0.url) }
+        .overlay(alignment: .center) {
+            if let toast {
+                Text(toast)
+                    .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.onBrand)
+                    .padding(.horizontal, 18).padding(.vertical, 10)
+                    .background(Theme.brand.opacity(0.92)).clipShape(Capsule())
+                    .shadow(radius: 8)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: toast)
         .task { await load() }
+    }
+
+    /// 显示操作失败提示，2.5 秒后自动消失
+    private func showToast(_ msg: String) {
+        toast = msg
+        Task {
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            if toast == msg { toast = nil }
+        }
     }
 
     private var navTitle: String {
@@ -282,7 +304,9 @@ struct PostDetailView: View {
                 try await Deps.shared.desktopScraper.lightReply(pid: pidL, tid: tidL, puid: puidL, fid: fidL)
                 likedPids.insert(c.pid)
             }
-        } catch {}
+        } catch {
+            showToast("点赞失败：\\(error.localizedDescription)")
+        }
     }
 
     // MARK: - 楼中楼内联展开
@@ -325,6 +349,16 @@ struct PostDetailView: View {
                 : try await Deps.shared.hupuScraper.fetchSubReplies(tid: tid, parentPid: c.pid)
         } catch {
             subRepliesCache[c.pid] = []
+            showToast("加载回复失败：\\(error.localizedDescription)")
+        }
+    }
+
+    /// 展开/收起楼中楼内某条子回复的回复链（直接从已拉取的平铺列表里按 quotePid 筛选，不发请求）
+    private func toggleSubChain(_ s: Comment) {
+        if expandedSubs.contains(s.pid) {
+            expandedSubs.remove(s.pid)
+        } else {
+            expandedSubs.insert(s.pid)
         }
     }
 
@@ -351,7 +385,15 @@ struct PostDetailView: View {
                                 .fill(Theme.textTertiary.opacity(0.35))
                                 .frame(width: 3)
                                 .padding(.vertical, 4)
-                            CommentCardView(comment: s)
+                            CommentCardView(
+                                comment: s,
+                                onSubReplies: s.replyCount > 0 ? { toggleSubChain(s) } : nil,
+                                subRepliesExpanded: expandedSubs.contains(s.pid)
+                            )
+                        }
+                        // 回复链内联展开：引用了该条的其他回复（quotePid 指向它）
+                        if expandedSubs.contains(s.pid) {
+                            subChainSection(s, subs: subs)
                         }
                     }
                     if subs.count < parent.replyCount {
@@ -377,6 +419,29 @@ struct PostDetailView: View {
         }
     }
 
+    /// 某条子回复的回复链：从同一楼层已拉取的列表里筛出 quotePid 指向它的回复，再缩进一层展示。
+    @ViewBuilder private func subChainSection(_ s: Comment, subs: [Comment]) -> some View {
+        let chain = subs.filter { $0.quotePid == s.pid }
+        VStack(alignment: .leading, spacing: 6) {
+            if chain.isEmpty {
+                Text("它的回复已在上方列出")
+                    .font(.system(size: 11)).foregroundStyle(Theme.textTertiary)
+                    .padding(.leading, 26)
+            } else {
+                ForEach(Array(chain.enumerated()), id: \.offset) { _, r in
+                    HStack(alignment: .top, spacing: 8) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Theme.textTertiary.opacity(0.22))
+                            .frame(width: 3)
+                            .padding(.vertical, 4)
+                        CommentCardView(comment: r)
+                    }
+                }
+            }
+        }
+        .padding(.leading, 24)
+    }
+
     private func submitReply(_ content: String) async {
         guard canInteract else { return }
         let quoteId = replyTarget?.pid ?? "0"
@@ -386,7 +451,9 @@ struct PostDetailView: View {
                 quoteId: quoteId, content: content
             )
             await reloadComments()
-        } catch {}
+        } catch {
+            showToast("回复失败：\\(error.localizedDescription)")
+        }
     }
 
     private func toggleCollect() async {
